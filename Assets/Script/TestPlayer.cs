@@ -55,6 +55,9 @@ public class TestPlayer : MonoBehaviour, IControllableActor
     float distToGround;
     string currentAnimation = "";
 
+    //hitbox stuff
+    public HitBoxManager hitBoxManager;
+
     // Use this for initialization
     void Start () {
         fsm = new FiniteStateMachine();
@@ -176,7 +179,7 @@ public class TestPlayer : MonoBehaviour, IControllableActor
 
     public void setAnimation(string anim)
     {
-        Debug.Log("Setting Anim to : " + anim);
+        //Debug.Log("Setting Anim to : " + anim);
         if (currentAnimation == anim)
         {
             
@@ -255,6 +258,7 @@ public class TestPlayer : MonoBehaviour, IControllableActor
 
     public void Vertical_Movement(bool jumping)
     {
+        //TODO - Find some way of enforcing explicit pressing of the jump key so holding jump wont make you bounce.
         if (isOnGround && jumping)
         {
             _rigidbody.velocity = new Vector2(_rigidbody.velocity.x, jumpspeed);
@@ -324,7 +328,7 @@ public class TestPlayerIdle : FSM_State
 
     public override void OnEnter()
     {
-        Debug.Log("Idle state entered");
+        //Debug.Log("Idle state entered");
         _actor.setAnimation("BeginIdle");
     }
 
@@ -374,7 +378,7 @@ public class TestPlayerMove : FSM_State
 
     public override void OnEnter()
     {
-        Debug.Log("Moving state entered");
+        //Debug.Log("Moving state entered");
         _actor.setAnimation("BeginRun");
     }
 
@@ -425,7 +429,7 @@ public class TestPlayerAirborn : FSM_State
 
     public override void OnEnter()
     {
-        Debug.Log("Airborn state entered");
+        //Debug.Log("Airborn state entered");
         _actor.setToAirAccel();
         _actor.setAnimation("BeginJump");
     }
@@ -474,20 +478,23 @@ public class TestPlayerAttack : FSM_State
 
     public override void OnEnter()
     {
-        Debug.Log("Attack state entered");
-        Debug.Log("Attack combo count: " + _actor.getAttackComboCount());
+        //Debug.Log("Attack state entered");
+        //Debug.Log("Attack combo count: " + _actor.getAttackComboCount());
         _actor.setToAttackAccel();
         _actor.is_attacking = true;
         switch (_actor.getAttackComboCount())
         {
             case 0:
                 _actor.setAnimation("BeginAttack1");
+                //_actor.hitBoxManager.SetCollider(0);
                 break;
             case 1:
                 _actor.setAnimation("BeginAttack2");
+                //_actor.hitBoxManager.SetCollider(1);
                 break;
             case 2:
                 _actor.setAnimation("BeginAttack3");
+                //_actor.hitBoxManager.SetCollider(2);
                 break;
             default:
                 break;
@@ -502,7 +509,7 @@ public class TestPlayerAttack : FSM_State
         attack_counter = 0.0f;
         //start combo counter.
         _actor.AdvanceAttackCombo();
-        Debug.Log("Attack combo count: " + _actor.getAttackComboCount());
+        //Debug.Log("Attack combo count: " + _actor.getAttackComboCount());
         _actor.is_attacking = false;
     }
 
@@ -537,7 +544,7 @@ public class TestPlayerAirAttack : FSM_State
 
     public override void OnEnter()
     {
-        Debug.Log("Air Attack state entered");
+        //Debug.Log("Air Attack state entered");
         _actor.suspendGravity();
         _actor.setGravityScale(0.1f); //This needs to be set by the weapon
         _actor.setToAirAccel();
