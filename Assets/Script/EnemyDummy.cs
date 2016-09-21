@@ -6,7 +6,8 @@ public class EnemyDummy : Enemy {
 
     public DummyIdle dummyIdle;
     public DummyDamage dummyDamage;
-    public DummyDie dummyDie;  
+    public DummyDie dummyDie;
+    public AnimationMonitor animationMonitor;
 
     public override void damageReaction()
     {
@@ -32,6 +33,8 @@ public class EnemyDummy : Enemy {
         dummyDie = new DummyDie(fsm, this);
         curHP = 4;
         maxHP = 4;
+
+        animationMonitor = GetComponentInChildren<AnimationMonitor>();
 	}
 
 }
@@ -83,6 +86,7 @@ public class DummyDamage : FSM_State
     public override void OnEnter()
     {
         _dummy.setAnimation("hurt");
+       
     }
 
     public override void OnExit()
@@ -92,9 +96,10 @@ public class DummyDamage : FSM_State
 
     public override void Update()
     {
-        if (_dummy.getCurrentAnimationComplete() && (_dummy._animator.GetCurrentAnimatorStateInfo(0).IsName("dummy_hit")))
+        if (_dummy.animationMonitor.isAnimationComplete())
         {
             _fsm.ChangeState(_dummy.dummyIdle);
+            _dummy.animationMonitor.reset();
         }
     }
 }

@@ -18,7 +18,7 @@ public class TestPlayer : Actor, IControllableActor
     Collider2D _collider;
     Transform _transform;
     Sprite _sprite;
-    //Animator _animator;
+    public AnimationMonitor animationMonitor;
 
     //movement variables
     const float GRAVITY_SCALE = 5.0f;
@@ -54,7 +54,7 @@ public class TestPlayer : Actor, IControllableActor
     public float attack_time = 0.4f; //set by weapon later
     public bool is_attacking = false;
     float distToGround;
-    //string currentAnimation = "";
+    
 
     //hitbox stuff
     public HitBoxManager hitBoxManager;
@@ -78,6 +78,8 @@ public class TestPlayer : Actor, IControllableActor
         distToGround = _collider.bounds.extents.y;
 
         fsm.ChangeState(state_idle);
+
+        animationMonitor = GetComponentInChildren<AnimationMonitor>();
 
         //calculateJumpSpeed(); // Something to consider. Allows for direct control of jump height.The math needs working on
 
@@ -495,9 +497,17 @@ public class TestPlayerAttack : FSM_State
         _actor.Handle_inputs();
 
         //if (attack_counter > _actor.attack_time)
-        if (_actor.getCurrentAnimationComplete())
+        if (_actor.animationMonitor.isAnimationComplete())
         {
             _fsm.ChangeState(_actor.state_idle);
+            _actor.animationMonitor.reset();
+        }
+
+        if (_actor.attack_pressed && _actor.animationMonitor.isInterruptable())
+        {
+            _fsm.ChangeState(_actor.state_attack);
+            _actor.animationMonitor.reset();
+            return;
         }
     }
 
@@ -565,9 +575,10 @@ public class TestPlayerAirAttack : FSM_State
         //Debug.Log(_actor.decel_time);
 
         //if (attack_counter > _actor.attack_time)
-        if (_actor.getCurrentAnimationComplete())
+        if (_actor.animationMonitor.isAnimationComplete())
         {
             _fsm.ChangeState(_actor.state_airborn);
+            _actor.animationMonitor.reset();
         }
 
     }
