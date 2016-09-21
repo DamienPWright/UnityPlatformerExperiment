@@ -2,28 +2,21 @@
 using System.Collections;
 using System;
 
-public class TestEnemy : MonoBehaviour, IAttackableActor {
+public class TestEnemy : Enemy {
 
-    int health = 3;
-    int maxHealth = 3;
-
-    public void takeDamage(int damage)
+    public void Start()
     {
-        Debug.Log("Enemy took damage!");
-        health -= damage;
-        checkHealth();
+        maxHP = 3;
+        curHP = maxHP;
     }
 
-    void checkHealth()
+    public override void onDeath()
     {
-        if(health <= 0)
-        {
-            this.gameObject.SetActive(false);
-        }
+        this.gameObject.SetActive(false);
     }
 	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+    public override void damageReaction()
+    {
+        //throw new NotImplementedException();
+    }
 }

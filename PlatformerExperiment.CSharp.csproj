@@ -66,6 +66,7 @@
     <Compile Include="Assets\Script\Actor.cs" />
     <Compile Include="Assets\Script\Command.cs" />
     <Compile Include="Assets\Script\Enemy.cs" />
+    <Compile Include="Assets\Script\EnemyDummy.cs" />
     <Compile Include="Assets\Script\GameManager.cs" />
     <Compile Include="Assets\Script\HitBoxManager.cs" />
     <Compile Include="Assets\Script\Interfaces\IAttackableActor.cs" />

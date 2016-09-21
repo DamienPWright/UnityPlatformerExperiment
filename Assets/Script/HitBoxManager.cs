@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
 
 public class HitBoxManager : MonoBehaviour {
 
@@ -11,7 +12,7 @@ public class HitBoxManager : MonoBehaviour {
     PolygonCollider2D localcollider;
     public bool hitbox_activated = false;
     int hitbox_lifecounter = 0;
-    int hitbox_life = 1; //how many frames the hitbox will persist for.
+    int hitbox_life = 3; //how many frames the hitbox will persist for.
 
     // Use this for initialization
     void Start () {
@@ -69,5 +70,71 @@ public class HitBoxManager : MonoBehaviour {
     public void ClearHitbox()
     {
         localcollider.pathCount = 0;
+    }
+}
+
+public abstract class HitboxWrapper
+{
+    public abstract void SetHitbox();
+    public abstract void ClearHitbox();
+}
+
+public class PolygonHitboxWrapper: HitboxWrapper
+{
+    PolygonCollider2D poly;
+
+    public PolygonHitboxWrapper(PolygonCollider2D _poly)
+    {
+        poly = _poly;
+    }
+
+    public override void SetHitbox()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void ClearHitbox()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+public class BoxHitboxWrapper : HitboxWrapper
+{
+    BoxCollider2D box;
+
+    public BoxHitboxWrapper(BoxCollider2D _box)
+    {
+        box = _box;
+    }
+
+    public override void SetHitbox()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void ClearHitbox()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+public class CircleHitboxWrapper : HitboxWrapper
+{
+    CircleCollider2D circle;
+
+    public CircleHitboxWrapper(CircleCollider2D _circle)
+    {
+        circle = _circle;
+    }
+
+    public override void SetHitbox()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void ClearHitbox()
+    {
+        throw new NotImplementedException();
     }
 }

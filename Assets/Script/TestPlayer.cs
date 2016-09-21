@@ -2,7 +2,7 @@
 using System.Collections;
 using System;
 
-public class TestPlayer : MonoBehaviour, IControllableActor
+public class TestPlayer : Actor, IControllableActor
 {
 
     //states
@@ -18,7 +18,7 @@ public class TestPlayer : MonoBehaviour, IControllableActor
     Collider2D _collider;
     Transform _transform;
     Sprite _sprite;
-    Animator _animator;
+    //Animator _animator;
 
     //movement variables
     const float GRAVITY_SCALE = 5.0f;
@@ -30,6 +30,7 @@ public class TestPlayer : MonoBehaviour, IControllableActor
     const float GROUND_DECEL_TIME = 0.1f;
     const float FALLSPEED = 30;
     const float JUMPSPEED = 15;
+    const float JUMPHEIGHT = 5.3f;
 
     public float gravity_scale = GRAVITY_SCALE;
     public float accel_time = GROUND_ACCEL_TIME;
@@ -53,7 +54,7 @@ public class TestPlayer : MonoBehaviour, IControllableActor
     public float attack_time = 0.4f; //set by weapon later
     public bool is_attacking = false;
     float distToGround;
-    string currentAnimation = "";
+    //string currentAnimation = "";
 
     //hitbox stuff
     public HitBoxManager hitBoxManager;
@@ -71,14 +72,16 @@ public class TestPlayer : MonoBehaviour, IControllableActor
         _collider = GetComponent<Collider2D>();
         _transform = GetComponent<Transform>();
         _sprite = GetComponent<Sprite>();
-        _animator = GetComponentInChildren<Animator>();
 
         _rigidbody.constraints = RigidbodyConstraints2D.FreezeRotation;
 
         distToGround = _collider.bounds.extents.y;
 
         fsm.ChangeState(state_idle);
-	}
+
+        //calculateJumpSpeed(); // Something to consider. Allows for direct control of jump height.The math needs working on
+
+    }
 	
 	// Update is called once per frame
 	void Update () {
@@ -92,6 +95,12 @@ public class TestPlayer : MonoBehaviour, IControllableActor
         isOnGround = IsGrounded();
         fsm.FixedUpdate();
         
+    }
+
+    void calculateJumpSpeed()
+    {
+        jumpspeed = Mathf.Sqrt(-2 * JUMPHEIGHT * Physics2D.gravity.y);
+        Debug.Log("Jumpspeed set to:" + jumpspeed);
     }
 
     bool IsGrounded()
@@ -177,43 +186,11 @@ public class TestPlayer : MonoBehaviour, IControllableActor
         _rigidbody.velocity = new Vector2(_rigidbody.velocity.x, 0);
     }
 
-    public void setAnimation(string anim)
-    {
-        //Debug.Log("Setting Anim to : " + anim);
-        if (currentAnimation == anim)
-        {
-            
-        }
-        else
-        {
-            if(currentAnimation != "") {
-                _animator.ResetTrigger(anim);
-            }
-            _animator.SetTrigger(anim);
-            currentAnimation = anim;
-        }
-        
-    }
 
-    public void resetAnimation(string anim)
-    {
-        _animator.ResetTrigger(anim);
-    }
-
-    public void setAnimationFloatVariable(string variable, float value)
-    {
-        _animator.SetFloat(variable, value);
-    }
-
-    void UpdateAnimator()
+    public override void UpdateAnimator()
     {
         _animator.SetBool("IsOnGround", isOnGround);
         _animator.SetBool("IsAttacking", is_attacking);
-    }
-
-    public bool getCurrentAnimationComplete()
-    {
-        return (_animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 1 && !_animator.IsInTransition(0));
     }
 
     public void Handle_inputs()
