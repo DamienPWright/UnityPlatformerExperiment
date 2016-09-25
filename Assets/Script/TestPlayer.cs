@@ -42,6 +42,7 @@ public class TestPlayer : Actor, IControllableActor
     public float hor_move_axis = 0.0f;
 
     //control variables
+    public bool facing_right = true; //false = left. true = right.
     public bool isOnGround = true;
     public bool jump_pressed = false;
     public bool jump_locked = false;
@@ -54,7 +55,13 @@ public class TestPlayer : Actor, IControllableActor
     public float attack_time = 0.4f; //set by weapon later
     public bool is_attacking = false;
     float distToGround;
-    
+    Vector2[] impulses =
+    {
+        new Vector2(6.0f, 0.0f),
+        new Vector2(8.0f, 0.0f)
+    };
+
+
 
     //hitbox stuff
     public HitBoxManager hitBoxManager;
@@ -209,11 +216,13 @@ public class TestPlayer : Actor, IControllableActor
             {
                 _rigidbody.velocity = new Vector2(Mathf.Min(_rigidbody.velocity.x + movement, movespeed), _rigidbody.velocity.y);
                 _transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+                facing_right = true;
             }
             else
             {
                 _rigidbody.velocity = new Vector2(Mathf.Max(_rigidbody.velocity.x + movement, -movespeed), _rigidbody.velocity.y);
                 _transform.localScale = new Vector3(-1.0f, 1.0f, 1.0f);
+                facing_right = false;
             }
             
         }
@@ -283,6 +292,61 @@ public class TestPlayer : Actor, IControllableActor
     public void move()
     {
         throw new NotImplementedException();
+    }
+
+    public override void applyImpulse(int index)
+    {
+        Vector2 imp;
+
+        if (facing_right)
+        {
+            imp = new Vector2(impulses[index].x, impulses[index].y);
+        }
+        else
+        {
+            imp = new Vector2(impulses[index].x * -1, impulses[index].y);
+        }
+
+        
+        _rigidbody.AddForce(imp, ForceMode2D.Impulse);
+
+        
+    }
+
+    public override void applyControlledImpulse(int index)
+    {
+
+        Vector2 imp;
+        float dir = Input.GetAxisRaw("Horizontal");
+        //Debug.Log(dir);
+
+        if ((hor_move_axis > 0.0f && facing_right) || (hor_move_axis < 0.0f && !facing_right))
+        {
+            imp = new Vector2(impulses[index].x * dir, impulses[index].y);
+        }
+        else
+        {
+            imp = new Vector2(0, 0);
+        }
+
+        _rigidbody.AddForce(imp, ForceMode2D.Impulse);
+
+        //Debug.Log(_rigidbody.velocity.x);
+        //cap
+        if ((_rigidbody.velocity.x > imp.x) || (_rigidbody.velocity.x < -imp.x))
+        {
+            _rigidbody.AddForce(new Vector2(-(_rigidbody.velocity.x - imp.x), 0.0f), ForceMode2D.Impulse);
+        }
+
+        //If capping y is needed..it might not be?
+        /*
+        if ((_rigidbody.velocity.y > imp.y) || (_rigidbody.velocity.y < -imp.y))
+        {
+            _rigidbody.AddForce(new Vector2(-(_rigidbody.velocity.y - imp.y), 0.0f), ForceMode2D.Impulse);
+        }
+        */
+
+        //Debug.Log(_rigidbody.velocity.x);
     }
 
     public void attack()
@@ -501,6 +565,7 @@ public class TestPlayerAttack : FSM_State
         {
             _fsm.ChangeState(_actor.state_idle);
             _actor.animationMonitor.reset();
+            return;
         }
 
         if (_actor.attack_pressed && _actor.animationMonitor.isInterruptable())
@@ -579,8 +644,15 @@ public class TestPlayerAirAttack : FSM_State
         {
             _fsm.ChangeState(_actor.state_airborn);
             _actor.animationMonitor.reset();
+            return;
         }
 
+        if (_actor.attack_pressed && _actor.animationMonitor.isInterruptable())
+        {
+            _fsm.ChangeState(_actor.state_airattack);
+            _actor.animationMonitor.reset();
+            return;
+        }
     }
 
     public override void FixedUpdate()

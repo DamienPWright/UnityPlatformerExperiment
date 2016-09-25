@@ -36,7 +36,7 @@ public abstract class Enemy : Actor, IAttackableActor, IControllableActor
 
         if (!immortal)
         {
-            Debug.Log("Enemy took damage!");
+            //Debug.Log("Enemy took damage!");
             curHP -= damage;
             checkHealth();
         }
@@ -56,7 +56,6 @@ public abstract class Enemy : Actor, IAttackableActor, IControllableActor
             onDeath();
         }
     }
-
 
     //IControllableActor
     public void jump()

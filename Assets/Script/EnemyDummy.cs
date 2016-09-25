@@ -11,7 +11,7 @@ public class EnemyDummy : Enemy {
 
     public override void damageReaction()
     {
-        Debug.Log("Hit the dummy!");
+        //Debug.Log("Hit the dummy!");
         if (!is_dead)
         {
             fsm.ChangeState(dummyDamage);

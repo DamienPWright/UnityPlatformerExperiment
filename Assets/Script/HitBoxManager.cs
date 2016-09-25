@@ -42,7 +42,7 @@ public class HitBoxManager : MonoBehaviour {
     {
         if (other.gameObject.tag == "Attackable")
         {
-            Debug.Log("Collider hit attackable");
+            //Debug.Log("Collider hit attackable");
             //there may be a better way to do this part... 
             MonoBehaviour script = other.GetComponent<MonoBehaviour>();
             if(script is IAttackableActor)

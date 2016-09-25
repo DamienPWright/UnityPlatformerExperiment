@@ -11,6 +11,16 @@ public class Actor : MonoBehaviour {
 
     }
 
+    public virtual void applyImpulse(int index)
+    {
+
+    }
+
+    public virtual void applyControlledImpulse(int index)
+    {
+        
+    }
+
     public void setAnimation(string anim)
     {
         //Debug.Log("Setting Anim to : " + anim);
