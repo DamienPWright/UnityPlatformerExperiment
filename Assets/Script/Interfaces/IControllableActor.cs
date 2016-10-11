@@ -3,5 +3,5 @@
     void jump_release();
     void attack();
     void attack_release();
-    void move();
+    void move(float axis);
 }

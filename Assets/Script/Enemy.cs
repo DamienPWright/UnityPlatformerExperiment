@@ -78,7 +78,7 @@ public abstract class Enemy : Actor, IAttackableActor, IControllableActor
         throw new NotImplementedException();
     }
 
-    public void move()
+    public void move(float axis)
     {
         throw new NotImplementedException();
     }

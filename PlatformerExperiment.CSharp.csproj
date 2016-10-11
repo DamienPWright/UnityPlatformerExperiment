@@ -72,8 +72,11 @@
     <Compile Include="Assets\Script\HitBoxManager.cs" />
     <Compile Include="Assets\Script\Interfaces\IAttackableActor.cs" />
     <Compile Include="Assets\Script\Interfaces\IControllableActor.cs" />
+    <Compile Include="Assets\Script\PlayerCommon.cs" />
+    <Compile Include="Assets\Script\PlayerWeeb.cs" />
     <Compile Include="Assets\Script\StateMachine\FSM_State.cs" />
     <Compile Include="Assets\Script\StateMachine\FiniteStateMachine.cs" />
+    <Compile Include="Assets\Script\StateMachine\PlayerWeeb_State.cs" />
     <Compile Include="Assets\Script\TestEnemy.cs" />
     <Compile Include="Assets\Script\TestPlayer.cs" />
   </ItemGroup>

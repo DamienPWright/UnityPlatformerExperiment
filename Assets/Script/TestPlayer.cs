@@ -204,7 +204,7 @@ public class TestPlayer : Actor, IControllableActor
 
     public void Handle_inputs()
     {
-        hor_move_axis = Input.GetAxisRaw("Horizontal");
+        //hor_move_axis = Input.GetAxisRaw("Horizontal");
     }
 
     public void Horizontal_Movement(float direction)
@@ -272,6 +272,12 @@ public class TestPlayer : Actor, IControllableActor
         {
             jump_locked = false;
         }
+
+        //cap fallspeed
+        if(_rigidbody.velocity.y < -fallspeed)
+        {
+            _rigidbody.velocity = new Vector2(_rigidbody.velocity.x, -fallspeed);
+        }
     }
 
     //Interface
@@ -289,9 +295,10 @@ public class TestPlayer : Actor, IControllableActor
         jump_pressed = false;
     }
 
-    public void move()
+    public void move(float axis)
     {
-        throw new NotImplementedException();
+        hor_move_axis = axis;
+        Debug.Log(axis);
     }
 
     public override void applyImpulse(int index)
@@ -384,7 +391,7 @@ public class TestPlayerIdle : FSM_State
     {
         _actor.Handle_inputs();
 
-        if (Input.GetAxisRaw("Horizontal") != 0)
+        if (_actor.hor_move_axis != 0)
         {
             _fsm.ChangeState(_actor.state_move);
             return;
@@ -435,7 +442,7 @@ public class TestPlayerMove : FSM_State
         _actor.Handle_inputs();
  
 
-        if (Input.GetAxisRaw("Horizontal") == 0)
+        if (_actor.hor_move_axis == 0)
         {
             _fsm.ChangeState(_actor.state_idle);
             return;
@@ -586,6 +593,7 @@ public class TestPlayerAttack : FSM_State
 public class TestPlayerAirAttack : FSM_State
 {
     TestPlayer _actor;
+    Vector2 preservedVector;
 
     float attack_counter = 0.0f;
 
@@ -597,9 +605,29 @@ public class TestPlayerAirAttack : FSM_State
     public override void OnEnter()
     {
         //Debug.Log("Air Attack state entered");
+
+        //Old Method
+        /*
         _actor.suspendGravity();
-        _actor.setGravityScale(0.1f); //This needs to be set by the weapon
+        _actor.setGravityScale(0); //This needs to be set by the weapon
         _actor.setToAirAccel();
+        */
+        //Method 1: Preserve motion vector
+        
+        preservedVector = new Vector2(_actor._rigidbody.velocity.x, _actor._rigidbody.velocity.y);
+        _actor.suspendGravity();
+        _actor.setGravityScale(0); //This needs to be set by the weapon
+        _actor.setToAirAccel();
+        
+
+        //Method 2: Set to static velocity.
+        /*
+        _actor.suspendGravity();
+        _actor.setGravityScale(0);
+        _actor.setToAirAccel();
+        */
+        //Method 3: Use old method but hold it on.
+
         _actor.is_attacking = true;
         
         switch (_actor.getAttackComboCount())
@@ -624,10 +652,28 @@ public class TestPlayerAirAttack : FSM_State
 
     public override void OnExit()
     {
+
+        //Old method
+        //_actor.setToGroundAccel();
+        //_actor.resetGravityScale();
+
+        //Method 1: Preserve motion vector
+        
         _actor.setToGroundAccel();
-        attack_counter = 0.0f;
         _actor.resetGravityScale();
+        _actor._rigidbody.velocity = preservedVector;
+        
+
+        //Method 2: Set to static velocity.
+        /*
+        _actor.resetGravityScale();
+        _actor.setToGroundAccel();
+        _actor._rigidbody.velocity = new Vector2(0, -6.0f);
+        */
+        //Method 3: Use old method but hold it on.
+
         //start combo counter.
+        attack_counter = 0.0f;
         _actor.AdvanceAttackCombo();
         _actor.is_attacking = false;
     }

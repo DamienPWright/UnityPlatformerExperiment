@@ -43,3 +43,11 @@ public class AttackReleaseCommand : Command
         _actor.attack_release();
     }
 }
+
+public class MoveCommand : Command
+{
+    public void execute(IControllableActor _actor, float axis)
+    {
+        _actor.move(axis);
+    }
+}
