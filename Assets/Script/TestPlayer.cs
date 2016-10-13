@@ -298,7 +298,7 @@ public class TestPlayer : Actor, IControllableActor
     public void move(float axis)
     {
         hor_move_axis = axis;
-        Debug.Log(axis);
+        //Debug.Log(axis);
     }
 
     public override void applyImpulse(int index)

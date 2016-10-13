@@ -49,12 +49,11 @@ public class PlayerCommon : Actor, IControllableActor{
     public float attack_time = 0.4f; //set by weapon later
     public bool is_attacking = false;
     float distToGround;
-    Vector2[] impulses =
-    {
-        new Vector2(6.0f, 0.0f),
-        new Vector2(8.0f, 0.0f)
-    };
 
+    public Vector2[] impulses =
+    {
+
+    };
 
 
     //hitbox stuff
@@ -124,6 +123,13 @@ public class PlayerCommon : Actor, IControllableActor{
         decel_time = 0.3f;
     }
 
+    public void setToAirAttackAccel()
+    {
+        //will need to get these values from attacks in future.
+        accel_time = AIR_ACCEL_TIME * 4f;
+        decel_time = AIR_ACCEL_TIME * 4f;
+    }
+
     public void setToNormalMoveSpeed()
     {
         movespeed = MOVE_SPEED;
@@ -139,6 +145,7 @@ public class PlayerCommon : Actor, IControllableActor{
     {
         attack_combo_count++;
         attack_combo_timer = 0;
+        animationMonitor.reset();
         if (attack_combo_count >= attack_combo_max)
         {
             ResetAttackCombo();
@@ -216,18 +223,20 @@ public class PlayerCommon : Actor, IControllableActor{
         else
         {
             float movement = (movespeed * Time.fixedDeltaTime) / decel_time;
-
+            
             if (_rigidbody.velocity.x > 0)
             {
                 movement *= -1;
             }
+            
             _rigidbody.velocity = new Vector2(_rigidbody.velocity.x + movement, _rigidbody.velocity.y);
-
+            
             if (_rigidbody.velocity.x > -movement * 2 && _rigidbody.velocity.x < movement * 2)
             {
                 _rigidbody.velocity = new Vector2(0, _rigidbody.velocity.y);
             }
-
+            
+            
         }
     }
 

@@ -8,7 +8,7 @@ public class PlayerWeeb : PlayerCommon {
     public PlayerWeebMove state_move;
     public PlayerWeebAirborn state_airborn;
     public PlayerWeebAttack state_attack;
-    
+    public PlayerWeebAirAttack state_airattack;
 
     public enum AnimType
     {
@@ -37,10 +37,17 @@ public class PlayerWeeb : PlayerCommon {
         state_move = new PlayerWeebMove(fsm, this);
         state_airborn = new PlayerWeebAirborn(fsm, this);
         state_attack = new PlayerWeebAttack(fsm, this);
+        state_airattack = new PlayerWeebAirAttack(fsm, this);
 
         fsm.ChangeState(state_idle);
 
         attack_combo_max = 2;
+
+        impulses = new Vector2[]
+        {
+            new Vector2(0.0f, 8.0f),
+            new Vector2(3.0f, 0.0f)
+        };
     }
 	
 }
@@ -58,6 +65,7 @@ public class PlayerWeebIdle : FSM_State
     {
         //Debug.Log("Idle state entered");
         _actor.setAnimation((int)PlayerWeeb.AnimType.idle);
+        _actor.setToGroundAccel();
     }
 
     public override void OnExit()
@@ -81,7 +89,7 @@ public class PlayerWeebIdle : FSM_State
             return;
         }
 
-        if (_actor.attack_pressed)
+        if (_actor.attack_pressed && !_actor.jump_pressed)
         {
             _fsm.ChangeState(_actor.state_attack);
             return;
@@ -163,7 +171,7 @@ public class PlayerWeebAirborn : FSM_State
 
     public override void OnExit()
     {
-        _actor.setToGroundAccel();
+        //_actor.setToGroundAccel();
     }
 
     public override void Update()
@@ -187,7 +195,7 @@ public class PlayerWeebAirborn : FSM_State
 
         if (_actor.attack_pressed)
         {
-            //_fsm.ChangeState(_actor.state_airattack);
+            _fsm.ChangeState(_actor.state_airattack);
             return;
         }
     }
@@ -231,11 +239,12 @@ public class PlayerWeebAttack : FSM_State
 
     public override void OnExit()
     {
-        _actor.setToGroundAccel();
+        //_actor.setToGroundAccel();
         //start combo counter.
         _actor.AdvanceAttackCombo();
         //Debug.Log("Attack combo count: " + _actor.getAttackComboCount());
         _actor.is_attacking = false;
+        _actor.animationMonitor.reset();
     }
 
     public override void Update()
@@ -255,6 +264,83 @@ public class PlayerWeebAttack : FSM_State
             _fsm.ChangeState(_actor.state_attack);
             _actor.animationMonitor.reset();
             return;
+        }
+    }
+
+    public override void FixedUpdate()
+    {
+        _actor.Horizontal_Movement(0.0f);
+        _actor.Vertical_Movement(false);
+    }
+}
+
+public class PlayerWeebAirAttack : FSM_State
+{
+    PlayerWeeb _actor;
+
+    public PlayerWeebAirAttack(FiniteStateMachine fsm, PlayerWeeb playerWeeb) : base(fsm)
+    {
+        _actor = playerWeeb;
+    }
+
+    public override void OnEnter()
+    {
+        //Debug.Log("Air Attack state entered");
+        _actor.setToAirAttackAccel();
+
+        float ycomp = 0.0f;
+
+        if (!(_actor._rigidbody.velocity.y >= 0)) //do not apply an impulse if you're already moving up
+        {
+            ycomp = Mathf.Min(-_actor._rigidbody.velocity.y, _actor.impulses[0].y);
+            _actor._rigidbody.AddForce(new Vector2(0.0f, ycomp - _actor._rigidbody.velocity.y), ForceMode2D.Impulse);
+        }
+
+        _actor.is_attacking = true;
+
+        switch (_actor.getAttackComboCount())
+        {
+            case 0:
+                _actor.setAnimation((int)PlayerWeeb.AnimType.air_attack_1);
+                break;
+            case 1:
+                _actor.setAnimation((int)PlayerWeeb.AnimType.air_attack_2);
+                break;
+            default:
+                break;
+            //do nothing
+        }
+    }
+
+    public override void OnExit()
+    {
+        //start combo counter.
+        _actor.AdvanceAttackCombo();
+        _actor.animationMonitor.reset();
+        _actor.is_attacking = false;
+    }
+
+    public override void Update()
+    {
+        /*
+        if (_actor.animationMonitor.isAnimationComplete())
+        {
+            _fsm.ChangeState(_actor.state_airborn);
+            _actor.animationMonitor.reset();
+            return;
+        }
+        */
+        if (_actor.attack_pressed && _actor.animationMonitor.isInterruptable())
+        {
+            _fsm.ChangeState(_actor.state_airattack);
+            _actor.animationMonitor.reset();
+            return;
+        }
+
+        if (_actor.isOnGround)
+        {
+            _fsm.ChangeState(_actor.state_idle);
+            
         }
     }
 

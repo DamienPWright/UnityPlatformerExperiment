@@ -7,11 +7,17 @@ public class HitBoxManager : MonoBehaviour {
     public PolygonCollider2D attack1_hitbox;
     public PolygonCollider2D attack2_hitbox;
     public PolygonCollider2D attack3_hitbox;
-    PolygonCollider2D[] hitboxes;
+    public PolygonCollider2D[] poly2dHitboxes;
+    public CircleCollider2D[] circleHitboxes;
+    public BoxCollider2D[] boxHitboxes;
     HitboxWrapper[] _hitboxes;
-    public PolygonCollider2D active_collider;
     public HitboxWrapper current_hitbox_wrapper;
-    public PolygonCollider2D localcollider;
+    public PolygonCollider2D active_poly_collider;
+    public PolygonCollider2D local_polycollider;
+    public CircleCollider2D active_circle_collider;
+    public CircleCollider2D local_circlecollider;
+    public BoxCollider2D active_box_collider;
+    public BoxCollider2D local_boxcollider;
     public bool hitbox_activated = false;
     int hitbox_lifecounter = 0;
     int hitbox_life = 3; //how many frames the hitbox will persist for.
@@ -19,15 +25,56 @@ public class HitBoxManager : MonoBehaviour {
     // Use this for initialization
     void Start () {
         //hitboxes = new PolygonCollider2D[] { attack1_hitbox, attack2_hitbox, attack3_hitbox };
-        _hitboxes = new HitboxWrapper[]
+        //_hitboxes = new HitboxWrapper[]
+        //{
+        //    new PolygonHitboxWrapper(attack1_hitbox, this),
+        //    new PolygonHitboxWrapper(attack2_hitbox, this),
+        //    new PolygonHitboxWrapper(attack3_hitbox, this)
+        //};
+
+        local_polycollider = gameObject.AddComponent<PolygonCollider2D>();
+        local_polycollider.isTrigger = true;
+        local_polycollider.enabled = false;
+        local_polycollider.pathCount = 0;
+
+        local_circlecollider = gameObject.AddComponent<CircleCollider2D>();
+        local_circlecollider.isTrigger = true;
+        local_circlecollider.enabled = false;
+        local_circlecollider.offset = new Vector2(0, 0);
+        local_circlecollider.radius = 0;
+
+        local_boxcollider = gameObject.AddComponent<BoxCollider2D>();
+        local_boxcollider.isTrigger = true;
+        local_boxcollider.enabled = false;
+        local_boxcollider.offset = new Vector2(0, 0);
+        local_boxcollider.size = new Vector2(0, 0);
+
+        _hitboxes = new HitboxWrapper[poly2dHitboxes.Length + circleHitboxes.Length + boxHitboxes.Length];
+
+        for(int i=0; i < _hitboxes.Length; i++)
         {
-            new PolygonHitboxWrapper(attack1_hitbox, this),
-            new PolygonHitboxWrapper(attack2_hitbox, this),
-            new PolygonHitboxWrapper(attack3_hitbox, this)
-        };
-        localcollider = gameObject.AddComponent<PolygonCollider2D>();
-        localcollider.isTrigger = true;
-        localcollider.pathCount = 0;
+            if(i < poly2dHitboxes.Length)
+            {
+                _hitboxes[i] = new PolygonHitboxWrapper(poly2dHitboxes[i], this);
+            }
+            else if(i < circleHitboxes.Length)
+            {
+                if(circleHitboxes.Length == 0)
+                {
+                    continue;
+                }
+                _hitboxes[i] = new CircleHitboxWrapper(circleHitboxes[i- poly2dHitboxes.Length], this);
+            }
+            else
+            {
+                if (boxHitboxes.Length == 0)
+                {
+                    continue;
+                }
+                _hitboxes[i] = new BoxHitboxWrapper(boxHitboxes[i - poly2dHitboxes.Length - circleHitboxes.Length], this);
+            }
+            
+        }
     }
 	
 	// Update is called once per frame
@@ -122,53 +169,67 @@ public class PolygonHitboxWrapper: HitboxWrapper
 
     public override void SetHitbox()
     {
-        _hbm.active_collider = _poly; //needs to be made active_poly_collider or something
-        _hbm.localcollider.SetPath(0, _hbm.active_collider.GetPath(0)); //needs to be made local_poly_collider or something
+        _hbm.active_poly_collider = _poly; //needs to be made active_poly_collider or something
+        _hbm.local_polycollider.SetPath(0, _hbm.active_poly_collider.GetPath(0)); //needs to be made local_poly_collider or something
+        _hbm.local_polycollider.enabled = true;
         _hbm.hitbox_activated = true;
     }
 
     public override void ClearHitbox()
     {
-        _hbm.localcollider.pathCount = 0;
+        _hbm.local_polycollider.pathCount = 0;
+        _hbm.local_polycollider.enabled = false;
     }
 }
 
 public class BoxHitboxWrapper : HitboxWrapper
 {
-    BoxCollider2D box;
+    BoxCollider2D _box;
+    HitBoxManager _hbm;
 
-    public BoxHitboxWrapper(BoxCollider2D _box)
+    public BoxHitboxWrapper(BoxCollider2D box, HitBoxManager hbm)
     {
-        box = _box;
+        _box = box;
+        _hbm = hbm;
     }
 
     public override void SetHitbox()
     {
-        throw new NotImplementedException();
+        _hbm.active_box_collider = _box;
+        _hbm.local_boxcollider.size = _box.size;
+        _hbm.local_boxcollider.offset = _box.offset;
+        _hbm.local_boxcollider.enabled = true;
+        _hbm.hitbox_activated = true;
     }
 
     public override void ClearHitbox()
     {
-        throw new NotImplementedException();
+        _hbm.local_boxcollider.enabled = false;
     }
 }
 
 public class CircleHitboxWrapper : HitboxWrapper
 {
-    CircleCollider2D circle;
+    CircleCollider2D _circle;
+    HitBoxManager _hbm;
 
-    public CircleHitboxWrapper(CircleCollider2D _circle)
+    public CircleHitboxWrapper(CircleCollider2D circle, HitBoxManager hbm)
     {
-        circle = _circle;
+        _circle = circle;
+        _hbm = hbm;
     }
 
     public override void SetHitbox()
     {
-        throw new NotImplementedException();
+        _hbm.active_circle_collider = _circle;
+        _hbm.local_circlecollider.radius = _circle.radius;
+        _hbm.local_circlecollider.offset = _circle.offset;
+        _hbm.local_circlecollider.enabled = true;
+        _hbm.hitbox_activated = true;
     }
 
     public override void ClearHitbox()
     {
-        throw new NotImplementedException();
+        _hbm.local_circlecollider.enabled = false;
     }
 }
