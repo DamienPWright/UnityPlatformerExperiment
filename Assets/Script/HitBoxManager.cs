@@ -8,15 +8,23 @@ public class HitBoxManager : MonoBehaviour {
     public PolygonCollider2D attack2_hitbox;
     public PolygonCollider2D attack3_hitbox;
     PolygonCollider2D[] hitboxes;
-    PolygonCollider2D active_collider;
-    PolygonCollider2D localcollider;
+    HitboxWrapper[] _hitboxes;
+    public PolygonCollider2D active_collider;
+    public HitboxWrapper current_hitbox_wrapper;
+    public PolygonCollider2D localcollider;
     public bool hitbox_activated = false;
     int hitbox_lifecounter = 0;
     int hitbox_life = 3; //how many frames the hitbox will persist for.
 
     // Use this for initialization
     void Start () {
-        hitboxes = new PolygonCollider2D[] { attack1_hitbox, attack2_hitbox, attack3_hitbox };
+        //hitboxes = new PolygonCollider2D[] { attack1_hitbox, attack2_hitbox, attack3_hitbox };
+        _hitboxes = new HitboxWrapper[]
+        {
+            new PolygonHitboxWrapper(attack1_hitbox, this),
+            new PolygonHitboxWrapper(attack2_hitbox, this),
+            new PolygonHitboxWrapper(attack3_hitbox, this)
+        };
         localcollider = gameObject.AddComponent<PolygonCollider2D>();
         localcollider.isTrigger = true;
         localcollider.pathCount = 0;
@@ -28,7 +36,7 @@ public class HitBoxManager : MonoBehaviour {
         {
             hitbox_activated = false;
             hitbox_lifecounter = 0;
-            ClearHitbox();
+            current_hitbox_wrapper.ClearHitbox();
         }
         if (hitbox_activated)
         {
@@ -52,9 +60,22 @@ public class HitBoxManager : MonoBehaviour {
         }
     }
 
+    public void setHitBox(int hitboxID)
+    {
+        if(hitboxID >= _hitboxes.Length)
+        {
+            return;
+        }
+        else
+        {
+            _hitboxes[hitboxID].SetHitbox();
+        }
+    }
+
     public void SetCollider(int hitboxID)
     {
-        if(hitboxID >= hitboxes.Length)
+        /*
+        if (hitboxID >= hitboxes.Length)
         {
             return;
         }
@@ -64,12 +85,21 @@ public class HitBoxManager : MonoBehaviour {
             localcollider.SetPath(0, active_collider.GetPath(0));
             hitbox_activated = true;
         }
-
+        */
+        if (hitboxID >= _hitboxes.Length)
+        {
+            return;
+        }
+        else
+        {
+            current_hitbox_wrapper = _hitboxes[hitboxID];
+            current_hitbox_wrapper.SetHitbox();
+        }
     }
 
     public void ClearHitbox()
     {
-        localcollider.pathCount = 0;
+        current_hitbox_wrapper.ClearHitbox();
     }
 }
 
@@ -81,21 +111,25 @@ public abstract class HitboxWrapper
 
 public class PolygonHitboxWrapper: HitboxWrapper
 {
-    PolygonCollider2D poly;
+    PolygonCollider2D _poly;
+    HitBoxManager _hbm;
 
-    public PolygonHitboxWrapper(PolygonCollider2D _poly)
+    public PolygonHitboxWrapper(PolygonCollider2D poly, HitBoxManager hbm)
     {
-        poly = _poly;
+        _poly = poly;
+        _hbm = hbm;
     }
 
     public override void SetHitbox()
     {
-        throw new NotImplementedException();
+        _hbm.active_collider = _poly; //needs to be made active_poly_collider or something
+        _hbm.localcollider.SetPath(0, _hbm.active_collider.GetPath(0)); //needs to be made local_poly_collider or something
+        _hbm.hitbox_activated = true;
     }
 
     public override void ClearHitbox()
     {
-        throw new NotImplementedException();
+        _hbm.localcollider.pathCount = 0;
     }
 }
 

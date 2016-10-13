@@ -5,7 +5,7 @@ using System;
 public class PlayerCommon : Actor, IControllableActor{
 
     //states
-    FiniteStateMachine fsm;
+    protected FiniteStateMachine fsm;
 
     //references
     public Rigidbody2D _rigidbody;
@@ -45,7 +45,7 @@ public class PlayerCommon : Actor, IControllableActor{
     public float attack_combo_window = 0.4f; //time in which the combo is held after the current attack ends. 
     public float attack_combo_timer = 0.0f; // No longer used. Attack times are decided by animations now.
     public byte attack_combo_count = 0;
-    byte attack_combo_max = 3; //set by weapon later
+    public byte attack_combo_max = 3; //set by weapon later
     public float attack_time = 0.4f; //set by weapon later
     public bool is_attacking = false;
     float distToGround;
@@ -185,13 +185,13 @@ public class PlayerCommon : Actor, IControllableActor{
 
     public override void UpdateAnimator()
     {
-        _animator.SetBool("IsOnGround", isOnGround);
-        _animator.SetBool("IsAttacking", is_attacking);
+        //_animator.SetBool("IsOnGround", isOnGround);
+        //_animator.SetBool("IsAttacking", is_attacking);
     }
 
     public void Handle_inputs()
     {
-        hor_move_axis = Input.GetAxisRaw("Horizontal");
+        //hor_move_axis = Input.GetAxisRaw("Horizontal");
     }
 
     public void Horizontal_Movement(float direction)
@@ -284,7 +284,7 @@ public class PlayerCommon : Actor, IControllableActor{
 
     public void move(float axis)
     {
-        //throw new NotImplementedException();
+        hor_move_axis = axis;
     }
 
     public override void applyImpulse(int index)

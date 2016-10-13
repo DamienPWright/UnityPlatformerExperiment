@@ -40,6 +40,12 @@ public class Actor : MonoBehaviour {
 
     }
 
+    public void setAnimation(int anim)
+    {
+        //Debug.Log("Setting Anim to : " + anim);
+        _animator.SetInteger("PlayAnim", anim);
+    }
+
     public void resetAnimation(string anim)
     {
         _animator.ResetTrigger(anim);
