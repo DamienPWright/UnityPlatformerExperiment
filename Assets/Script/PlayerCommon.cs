@@ -7,12 +7,7 @@ public class PlayerCommon : Actor, IControllableActor{
     //states
     protected FiniteStateMachine fsm;
 
-    //references
-    public Rigidbody2D _rigidbody;
-    Collider2D _collider;
-    Transform _transform;
-    Sprite _sprite;
-    public AnimationMonitor animationMonitor;
+    
 
     //movement variables
     const float GRAVITY_SCALE = 5.0f;
@@ -42,6 +37,7 @@ public class PlayerCommon : Actor, IControllableActor{
     public bool jump_locked = false;
     public bool attack_pressed = false;
     public bool attack_locked = false;
+    public bool attack2_pressed = false;
     public float attack_combo_window = 0.4f; //time in which the combo is held after the current attack ends. 
     public float attack_combo_timer = 0.0f; // No longer used. Attack times are decided by animations now.
     public byte attack_combo_count = 0;
@@ -83,6 +79,7 @@ public class PlayerCommon : Actor, IControllableActor{
         fsm.Update();
         AttackComboHandler();
         UpdateAnimator();
+        ProcessHitStop();
     }
 
     void FixedUpdate()
@@ -320,6 +317,7 @@ public class PlayerCommon : Actor, IControllableActor{
 
         Vector2 imp;
         float dir = Input.GetAxisRaw("Horizontal");
+        float ycomp = 0.0f;
         //Debug.Log(dir);
 
         if ((hor_move_axis > 0.0f && facing_right) || (hor_move_axis < 0.0f && !facing_right))
@@ -328,10 +326,21 @@ public class PlayerCommon : Actor, IControllableActor{
         }
         else
         {
-            imp = new Vector2(0, 0);
+            imp = new Vector2(0, impulses[index].y);
         }
 
-        _rigidbody.AddForce(imp, ForceMode2D.Impulse);
+        _rigidbody.AddForce(new Vector2(imp.x, 0.0f), ForceMode2D.Impulse);
+
+        //veritcal component
+        if (_rigidbody.velocity.y >= 0 && _rigidbody.velocity.y < imp.y) 
+        {
+            ycomp = imp.y - _rigidbody.velocity.y;
+        }else if(_rigidbody.velocity.y < 0)
+        {
+            ycomp = imp.y;
+        }
+        _rigidbody.AddForce(new Vector2(0.0f, ycomp), ForceMode2D.Impulse);
+
 
         //Debug.Log(_rigidbody.velocity.x);
         //cap
@@ -353,11 +362,29 @@ public class PlayerCommon : Actor, IControllableActor{
 
     public void attack()
     {
-        attack_pressed = true;
+        if (!hitstop)
+        {
+            attack_pressed = true;
+        }
+        
     }
 
     public void attack_release()
     {
         attack_pressed = false;
+    }
+
+    public void attack2()
+    {
+        if (!hitstop)
+        {
+            attack2_pressed = true;
+        }
+        
+    }
+
+    public void attack2_release()
+    {
+        attack2_pressed = false;
     }
 }

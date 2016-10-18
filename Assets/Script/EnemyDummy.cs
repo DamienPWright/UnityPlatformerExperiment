@@ -7,7 +7,6 @@ public class EnemyDummy : Enemy {
     public DummyIdle dummyIdle;
     public DummyDamage dummyDamage;
     public DummyDie dummyDie;
-    public AnimationMonitor animationMonitor;
 
     public override void damageReaction()
     {

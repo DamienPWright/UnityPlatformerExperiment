@@ -12,6 +12,8 @@ public class GameManager : MonoBehaviour {
     public JumpReleaseCommand jump_release_command;
     public AttackCommand attack_command;
     public AttackReleaseCommand attack_release_command;
+    public Attack2Command attack2_command;
+    public Attack2ReleaseCommand attack2_release_command;
     public MoveCommand move_command;
 
 	// Use this for initialization
@@ -20,6 +22,9 @@ public class GameManager : MonoBehaviour {
         jump_release_command = new JumpReleaseCommand();
         attack_command = new AttackCommand();
         attack_release_command = new AttackReleaseCommand();
+        attack2_command = new Attack2Command();
+        attack2_release_command = new Attack2ReleaseCommand();
+
         move_command = new MoveCommand();
         setActiveControllableActor(startingGameObject);
 	}
@@ -51,6 +56,15 @@ public class GameManager : MonoBehaviour {
             attack_release_command.execute(_active_controllable_Actor);
         }
 
+        if (Input.GetButtonDown("Fire2"))
+        {
+            attack2_command.execute(_active_controllable_Actor);
+        }
+
+        if (Input.GetButtonUp("Fire2"))
+        {
+            attack2_release_command.execute(_active_controllable_Actor);
+        }
         move_command.execute(_active_controllable_Actor, Input.GetAxisRaw("Horizontal"));
     }
 

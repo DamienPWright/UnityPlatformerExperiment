@@ -65,6 +65,8 @@
   <ItemGroup>
     <Compile Include="Assets\Script\Actor.cs" />
     <Compile Include="Assets\Script\AnimationMonitor.cs" />
+    <Compile Include="Assets\Script\Attack.cs" />
+    <Compile Include="Assets\Script\AttackManager.cs" />
     <Compile Include="Assets\Script\Command.cs" />
     <Compile Include="Assets\Script\Enemy.cs" />
     <Compile Include="Assets\Script\EnemyDummy.cs" />

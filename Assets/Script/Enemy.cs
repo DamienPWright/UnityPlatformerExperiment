@@ -25,6 +25,7 @@ public abstract class Enemy : Actor, IAttackableActor, IControllableActor
     {
         fsm.Update();
         UpdateAnimator();
+        ProcessHitStop();
     }
 
     public virtual void takeDamage(int damage)
@@ -79,6 +80,16 @@ public abstract class Enemy : Actor, IAttackableActor, IControllableActor
     }
 
     public void move(float axis)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void attack2()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void attack2_release()
     {
         throw new NotImplementedException();
     }

@@ -1,16 +1,22 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using System;
 
 public class HitBoxManager : MonoBehaviour {
 
-    public PolygonCollider2D attack1_hitbox;
-    public PolygonCollider2D attack2_hitbox;
-    public PolygonCollider2D attack3_hitbox;
+    public Actor owner;
+
     public PolygonCollider2D[] poly2dHitboxes;
     public CircleCollider2D[] circleHitboxes;
     public BoxCollider2D[] boxHitboxes;
-    HitboxWrapper[] _hitboxes;
+    string[] _polynames;
+    public string[] polynames;
+    public string[] circlenames;
+    public string[] boxnames;
+    bool hitboxes_initialized = false;
+
+    Dictionary<string, HitboxWrapper> __hitboxes;
     public HitboxWrapper current_hitbox_wrapper;
     public PolygonCollider2D active_poly_collider;
     public PolygonCollider2D local_polycollider;
@@ -24,13 +30,8 @@ public class HitBoxManager : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        //hitboxes = new PolygonCollider2D[] { attack1_hitbox, attack2_hitbox, attack3_hitbox };
-        //_hitboxes = new HitboxWrapper[]
-        //{
-        //    new PolygonHitboxWrapper(attack1_hitbox, this),
-        //    new PolygonHitboxWrapper(attack2_hitbox, this),
-        //    new PolygonHitboxWrapper(attack3_hitbox, this)
-        //};
+
+        __hitboxes = new Dictionary<string, HitboxWrapper>();
 
         local_polycollider = gameObject.AddComponent<PolygonCollider2D>();
         local_polycollider.isTrigger = true;
@@ -47,38 +48,24 @@ public class HitBoxManager : MonoBehaviour {
         local_boxcollider.isTrigger = true;
         local_boxcollider.enabled = false;
         local_boxcollider.offset = new Vector2(0, 0);
-        local_boxcollider.size = new Vector2(0, 0);
+        local_boxcollider.size = new Vector2(0, 0);        
 
-        _hitboxes = new HitboxWrapper[poly2dHitboxes.Length + circleHitboxes.Length + boxHitboxes.Length];
-
-        for(int i=0; i < _hitboxes.Length; i++)
-        {
-            if(i < poly2dHitboxes.Length)
-            {
-                _hitboxes[i] = new PolygonHitboxWrapper(poly2dHitboxes[i], this);
-            }
-            else if(i < circleHitboxes.Length)
-            {
-                if(circleHitboxes.Length == 0)
-                {
-                    continue;
-                }
-                _hitboxes[i] = new CircleHitboxWrapper(circleHitboxes[i- poly2dHitboxes.Length], this);
-            }
-            else
-            {
-                if (boxHitboxes.Length == 0)
-                {
-                    continue;
-                }
-                _hitboxes[i] = new BoxHitboxWrapper(boxHitboxes[i - poly2dHitboxes.Length - circleHitboxes.Length], this);
-            }
-            
-        }
     }
 	
 	// Update is called once per frame
 	void Update () {
+
+        if (!hitboxes_initialized)
+        {
+            if((polynames.Length > 0) || (circlenames.Length > 0) || (boxnames.Length > 0))
+            {
+                hitboxes_initialized = true;
+                initializeHitboxDictionary();
+            }
+        }
+
+
+
         if(hitbox_lifecounter >= hitbox_life)
         {
             hitbox_activated = false;
@@ -93,6 +80,28 @@ public class HitBoxManager : MonoBehaviour {
         
     }
 
+    void initializeHitboxDictionary()
+    {
+        Debug.Log("polynames length: " + polynames.Length);
+        for (int i = 0; i < poly2dHitboxes.Length; i++)
+        {
+            __hitboxes.Add(polynames[i], new PolygonHitboxWrapper(poly2dHitboxes[i], this));
+            Debug.Log(polynames[i]);
+        }
+
+        for(int i = 0; i < circleHitboxes.Length; i++)
+        {
+            __hitboxes.Add(circlenames[i], new CircleHitboxWrapper(circleHitboxes[i], this));
+            Debug.Log(circlenames[i]);
+        }
+
+        for(int i = 0; i < boxHitboxes.Length; i++)
+        {
+            __hitboxes.Add(boxnames[i], new BoxHitboxWrapper(boxHitboxes[i], this));
+            Debug.Log(boxnames[i]);
+        }
+    }
+
     void OnTriggerEnter2D(Collider2D other)
     {
         if (other.gameObject.tag == "Attackable")
@@ -103,44 +112,24 @@ public class HitBoxManager : MonoBehaviour {
             if(script is IAttackableActor)
             {
                 (script as IAttackableActor).takeDamage(1);
+                (script as Actor).ApplyHitStop(4);
+                owner.ApplyHitStop(4);
             }
         }
     }
 
-    public void setHitBox(int hitboxID)
+    public void SetCollider(string hitboxKey)
     {
-        if(hitboxID >= _hitboxes.Length)
-        {
-            return;
-        }
-        else
-        {
-            _hitboxes[hitboxID].SetHitbox();
-        }
-    }
+        //Debug.Log(polynames.Length);
 
-    public void SetCollider(int hitboxID)
-    {
-        /*
-        if (hitboxID >= hitboxes.Length)
+        try
         {
-            return;
-        }
-        else
-        {
-            active_collider = hitboxes[hitboxID];
-            localcollider.SetPath(0, active_collider.GetPath(0));
-            hitbox_activated = true;
-        }
-        */
-        if (hitboxID >= _hitboxes.Length)
-        {
-            return;
-        }
-        else
-        {
-            current_hitbox_wrapper = _hitboxes[hitboxID];
+            current_hitbox_wrapper = __hitboxes[hitboxKey];
             current_hitbox_wrapper.SetHitbox();
+        }
+        catch (KeyNotFoundException)
+        {
+            Debug.Log("Key: " + hitboxKey + " was not found");
         }
     }
 

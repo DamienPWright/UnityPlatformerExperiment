@@ -44,6 +44,22 @@ public class AttackReleaseCommand : Command
     }
 }
 
+public class Attack2Command : Command
+{
+    override public void execute(IControllableActor _actor)
+    {
+        _actor.attack2();
+    }
+}
+
+public class Attack2ReleaseCommand : Command
+{
+    override public void execute(IControllableActor _actor)
+    {
+        _actor.attack2_release();
+    }
+}
+
 public class MoveCommand : Command
 {
     public void execute(IControllableActor _actor, float axis)

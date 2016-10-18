@@ -13,13 +13,6 @@ public class TestPlayer : Actor, IControllableActor
     public TestPlayerAttack state_attack;
     public TestPlayerAirAttack state_airattack;
 
-    //references
-    public Rigidbody2D _rigidbody;
-    Collider2D _collider;
-    Transform _transform;
-    Sprite _sprite;
-    public AnimationMonitor animationMonitor;
-
     //movement variables
     const float GRAVITY_SCALE = 5.0f;
     const float AIR_GRAVITY_SCALE = 2.0f;
@@ -364,6 +357,16 @@ public class TestPlayer : Actor, IControllableActor
     public void attack_release()
     {
         attack_pressed = false;
+    }
+
+    public void attack2()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void attack2_release()
+    {
+        throw new NotImplementedException();
     }
 }
 
