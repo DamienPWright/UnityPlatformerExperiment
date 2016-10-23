@@ -70,7 +70,8 @@ public class PlayerCommon : Actor, IControllableActor{
         distToGround = _collider.bounds.extents.y;
 
         animationMonitor = GetComponentInChildren<AnimationMonitor>();
-
+        _attack_manager = new AttackManager();
+        _attack_manager.Initialise();
     }
 
     // Update is called once per frame
@@ -80,6 +81,7 @@ public class PlayerCommon : Actor, IControllableActor{
         AttackComboHandler();
         UpdateAnimator();
         ProcessHitStop();
+        //attack_manager.Update();
     }
 
     void FixedUpdate()
@@ -102,8 +104,8 @@ public class PlayerCommon : Actor, IControllableActor{
 
         Debug.DrawRay(transform.position + extent_A, -Vector3.up * (distToGround + 0.1f), Color.green);
         Debug.DrawRay(transform.position + extent_B, -Vector3.up * (distToGround + 0.1f), Color.green);
-        bool detector_A = Physics2D.Raycast(transform.position + extent_A, -Vector3.up, distToGround + 0.1f, LayerMask.GetMask("env_solid"));
-        bool detector_B = Physics2D.Raycast(transform.position + extent_B, -Vector3.up, distToGround + 0.1f, LayerMask.GetMask("env_solid"));
+        bool detector_A = Physics2D.Raycast(transform.position + extent_A, -Vector3.up, distToGround + 0.07f, LayerMask.GetMask("env_solid"));
+        bool detector_B = Physics2D.Raycast(transform.position + extent_B, -Vector3.up, distToGround + 0.07f, LayerMask.GetMask("env_solid"));
         return (detector_A || detector_B);
     }
 
@@ -142,7 +144,7 @@ public class PlayerCommon : Actor, IControllableActor{
     {
         attack_combo_count++;
         attack_combo_timer = 0;
-        animationMonitor.reset();
+        //animationMonitor.reset();
         if (attack_combo_count >= attack_combo_max)
         {
             ResetAttackCombo();
@@ -296,20 +298,32 @@ public class PlayerCommon : Actor, IControllableActor{
     public override void applyImpulse(int index)
     {
         Vector2 imp;
+        
+        //x component
 
         if (facing_right)
         {
-            imp = new Vector2(impulses[index].x, impulses[index].y);
+            imp = new Vector2(impulses[index].x, 0);
         }
         else
         {
-            imp = new Vector2(impulses[index].x * -1, impulses[index].y);
+            imp = new Vector2(impulses[index].x * -1, 0);
         }
-
 
         _rigidbody.AddForce(imp, ForceMode2D.Impulse);
 
+        //y component
 
+        //If capping y is needed..it might not be?
+        
+        if((_rigidbody.velocity.y < 0))
+        {
+            if ((_rigidbody.velocity.y > imp.y) || (_rigidbody.velocity.y < -imp.y))
+            {
+                _rigidbody.AddForce(new Vector2(0.0f, -(_rigidbody.velocity.y - imp.y)), ForceMode2D.Impulse);
+            }
+        }
+        
     }
 
     public override void applyControlledImpulse(int index)
@@ -337,25 +351,11 @@ public class PlayerCommon : Actor, IControllableActor{
             ycomp = imp.y - _rigidbody.velocity.y;
         }else if(_rigidbody.velocity.y < 0)
         {
-            ycomp = imp.y;
+            ycomp = imp.y + -_rigidbody.velocity.y;
         }
         _rigidbody.AddForce(new Vector2(0.0f, ycomp), ForceMode2D.Impulse);
 
-
-        //Debug.Log(_rigidbody.velocity.x);
-        //cap
-        if ((_rigidbody.velocity.x > imp.x) || (_rigidbody.velocity.x < -imp.x))
-        {
-            _rigidbody.AddForce(new Vector2(-(_rigidbody.velocity.x - imp.x), 0.0f), ForceMode2D.Impulse);
-        }
-
-        //If capping y is needed..it might not be?
-        /*
-        if ((_rigidbody.velocity.y > imp.y) || (_rigidbody.velocity.y < -imp.y))
-        {
-            _rigidbody.AddForce(new Vector2(-(_rigidbody.velocity.y - imp.y), 0.0f), ForceMode2D.Impulse);
-        }
-        */
+        
 
         //Debug.Log(_rigidbody.velocity.x);
     }

@@ -12,7 +12,7 @@ public class Actor : MonoBehaviour {
     public Transform _transform;
     public Sprite _sprite;
     public AnimationMonitor animationMonitor;
-    public AttackManager _attackManager;
+    public AttackManager _attack_manager;
 
     public Vector2 stored_velocity;
     public float stored_animspeed;

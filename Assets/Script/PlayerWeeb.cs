@@ -30,10 +30,7 @@ public class PlayerWeeb : PlayerCommon {
     }
 	// Use this for initialization
 	void Start () {
-        int test = (int)AnimType.air_attack_1;
         InitialiseCommon();
-        Debug.Log(test);
-
         state_idle = new PlayerWeebIdle(fsm, this);
         state_move = new PlayerWeebMove(fsm, this);
         state_airborn = new PlayerWeebAirborn(fsm, this);
@@ -46,10 +43,10 @@ public class PlayerWeeb : PlayerCommon {
 
         impulses = new Vector2[]
         {
-            new Vector2(0.0f, 4.0f),
-            new Vector2(3.0f, 0.0f),
+            new Vector2(0.0f, 5.0f),
+            new Vector2(5.0f, 0.0f),
             new Vector2(15.0f, 0.0f),
-            new Vector2(5.0f, 16.0f)
+            new Vector2(5.0f, 15.0f)
         };
     }
 	
@@ -92,11 +89,18 @@ public class PlayerWeebIdle : FSM_State
             return;
         }
 
-        if ((_actor.attack_pressed || _actor.attack2_pressed) && !_actor.jump_pressed)
+        if (_actor.attack_pressed && _actor._attack_manager.canDoANormalAttack())
         {
             _fsm.ChangeState(_actor.state_attack);
             return;
         }
+
+        if (_actor.attack2_pressed && _actor._attack_manager.canDoASpecialAttack())
+        {
+            _fsm.ChangeState(_actor.state_attack);
+            return;
+        }
+
     }
 
     public override void FixedUpdate()
@@ -143,7 +147,13 @@ public class PlayerWeebMove : FSM_State
             return;
         }
 
-        if (_actor.attack_pressed)
+        if (_actor.attack_pressed && _actor._attack_manager.canDoANormalAttack())
+        {
+            _fsm.ChangeState(_actor.state_attack);
+            return;
+        }
+
+        if (_actor.attack2_pressed && _actor._attack_manager.canDoASpecialAttack())
         {
             _fsm.ChangeState(_actor.state_attack);
             return;
@@ -196,7 +206,13 @@ public class PlayerWeebAirborn : FSM_State
             return;
         }
 
-        if (_actor.attack_pressed)
+        if (_actor.attack_pressed && _actor._attack_manager.canDoAirNormalAttack())
+        {
+            _fsm.ChangeState(_actor.state_airattack);
+            return;
+        }
+
+        if (_actor.attack2_pressed && _actor._attack_manager.canDoAirSpecialAttack())
         {
             _fsm.ChangeState(_actor.state_airattack);
             return;
@@ -221,74 +237,75 @@ public class PlayerWeebAttack : FSM_State
 
     public override void OnEnter()
     {
-        //Debug.Log("Attack state entered");
-        //Debug.Log("Attack combo count: " + _actor.getAttackComboCount());
-        //_actor.attackManager.init();
-        _actor.animationMonitor.reset();
-        _actor.setToAttackAccel();
+        _actor.animationMonitor.reset();    
+        _actor.setToAttackAccel();          
         _actor.is_attacking = true;
-        if (_actor.attack_pressed)
+        
+        if ((_actor.attack_pressed)){
+            _actor._attack_manager.doNormalAttack();
+        }else if ((_actor.attack2_pressed))
         {
-            //attackManager.normalAttack();
-            switch (_actor.getAttackComboCount())
-            {
-                case 0:
-                    _actor.setAnimation((int)PlayerWeeb.AnimType.attack_1);
-                    break;
-                case 1:
-                    _actor.setAnimation((int)PlayerWeeb.AnimType.attack_2);
-                    break;
-                default:
-                    break;
-                    //do nothing
-            }
-        }else if (_actor.attack2_pressed)
-        {
-            //attackManager.specialAttack();
-            _actor.setAnimation((int)PlayerWeeb.AnimType.attack_special);
+            _actor._attack_manager.doSpecialAttack();
         }
-
-        _actor.AdvanceAttackCombo();
+        _actor.setAnimation(_actor._attack_manager.getAttackAnim());
+        
     }
 
     public override void OnExit()
     {
-        //_actor.setToGroundAccel();
-        //start combo counter.  
-        //Debug.Log("Attack combo count: " + _actor.getAttackComboCount());
-        _actor.is_attacking = false;
+        _actor.is_attacking = false;        
     }
 
     public override void Update()
     {
-        //_actor.Handle_inputs();
-
-        //if (attack_counter > _actor.attack_time)
         if (_actor.animationMonitor.isAnimationComplete())
         {
             _fsm.ChangeState(_actor.state_idle);
-            _actor.animationMonitor.reset();
-            //Debug.Log("idle triggered");
+            _actor._attack_manager.resetAttackCombo();
             return;
         }
 
-        if ((_actor.attack_pressed || _actor.attack2_pressed) && _actor.animationMonitor.isInterruptable())
+        if (_actor.attack_pressed && _actor.animationMonitor.isInterruptable())
         {
-            _fsm.ChangeState(_actor.state_attack);
-            _actor.animationMonitor.reset();
-            //Debug.Log("attack triggered");
-            return;
+            if (_actor._attack_manager.canDoANormalAttack())
+            {
+                _fsm.ChangeState(_actor.state_attack);
+                _actor._attack_manager.endAttack();
+                return;
+            }
+            
         }
 
-        if (_actor.attack_pressed && _actor.attack2_pressed && _actor.animationMonitor.isInterruptable()){
-            Debug.Log("Ultimate used");
+        if (_actor.attack2_pressed && _actor.animationMonitor.isInterruptable())
+        {
+            if (_actor._attack_manager.canDoASpecialAttack())
+            {
+                _fsm.ChangeState(_actor.state_attack);
+                _actor._attack_manager.endAttack();
+            }
         }
     }
 
     public override void FixedUpdate()
     {
-        _actor.Horizontal_Movement(0.0f);
-        _actor.Vertical_Movement(false);
+        if (_actor._attack_manager.isXinputLocked())
+        {
+            _actor.Horizontal_Movement(0.0f);
+        }
+        else
+        {
+            _actor.Horizontal_Movement(_actor.hor_move_axis);
+        }
+
+        if (_actor._attack_manager.isJumpInputLocked())
+        {
+            _actor.Vertical_Movement(false);
+        }
+        else
+        {
+            _actor.Vertical_Movement(_actor.jump_pressed);
+        }
+        
     }
 }
 
@@ -308,7 +325,22 @@ public class PlayerWeebAirAttack : FSM_State
         //Debug.Log("Air Attack state entered");
         _actor.animationMonitor.reset();
         _actor.setToAirAttackAccel();
-        
+
+        _actor.animationMonitor.reset();
+        //_actor.setToAttackAccel();
+        _actor.is_attacking = true;
+
+        if ((_actor.attack_pressed))
+        {
+            _actor._attack_manager.doAirNormalAttack();
+        }
+        else if ((_actor.attack2_pressed))
+        {
+            _actor._attack_manager.doAirSpecialAttack();
+        }
+        _actor.setAnimation(_actor._attack_manager.getAttackAnim());
+
+        /*
         //General method for limited vertical impulse.
         float ycomp = 0.0f;
 
@@ -344,6 +376,7 @@ public class PlayerWeebAirAttack : FSM_State
             _actor.jump_pressed = false; //NEED ANOTHER WAY FOR THIS
         }
         _actor.AdvanceAttackCombo();
+        */
     }
 
     public override void OnExit()
@@ -353,31 +386,51 @@ public class PlayerWeebAirAttack : FSM_State
 
     public override void Update()
     {
-        if ((_actor.attack_pressed) && _actor.animationMonitor.isInterruptable())
+        if (_actor.attack_pressed && _actor.animationMonitor.isInterruptable())
         {
-            _fsm.ChangeState(_actor.state_airattack);
-            return;
-        }
-
-        if (_actor.attack2_pressed)
-        {
-            if(special_counter == 2)
+            if (_actor._attack_manager.canDoAirNormalAttack())
             {
                 _fsm.ChangeState(_actor.state_airattack);
-                special_counter = 0;
+                _actor._attack_manager.endAttack();
+                return;
+            }
+        }
+
+        if (_actor.attack2_pressed && _actor.animationMonitor.isInterruptable())
+        {
+            if (_actor._attack_manager.canDoASpecialAttack())
+            {
+                _fsm.ChangeState(_actor.state_airattack);
+                _actor._attack_manager.endAttack();
             }
         }
 
         if (_actor.isOnGround)
         {
             _fsm.ChangeState(_actor.state_idle);
-            special_counter = 0;
+            _actor._attack_manager.endAttack();
+            _actor._attack_manager.resetAttackCombo();
         }
     }
 
     public override void FixedUpdate()
     {
-        _actor.Horizontal_Movement(0.0f);
-        _actor.Vertical_Movement(_actor.jump_pressed);
+        if (_actor._attack_manager.isXinputLocked())
+        {
+            _actor.Horizontal_Movement(0.0f);
+        }
+        else
+        {
+            _actor.Horizontal_Movement(_actor.hor_move_axis);
+        }
+
+        if (_actor._attack_manager.isJumpInputLocked())
+        {
+            _actor.Vertical_Movement(false);
+        }
+        else
+        {
+            _actor.Vertical_Movement(_actor.jump_pressed);
+        }
     }
 }

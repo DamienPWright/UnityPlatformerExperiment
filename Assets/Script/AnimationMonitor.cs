@@ -14,6 +14,10 @@ public class AnimationMonitor : MonoBehaviour{
 
     public void reset()
     {
+        //Should be caled at the start of a state to ensure that the animation monitor can do its job properly
+        //Be aware that animations with transition times may not work with this; the previous animation's
+        //complete state may trigger AFTER this has been reset, which will cause the next animation
+        //to end prematurely.
         animation_complete = false;
         interruptable = false;
 		super_armor = false;
@@ -86,6 +90,6 @@ public class AnimationMonitor : MonoBehaviour{
 
     public void animationDebugMessage(string msg)
     {
-        Debug.Log(msg);
+        //Debug.Log(msg);
     }
 }

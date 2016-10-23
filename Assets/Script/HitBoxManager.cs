@@ -82,23 +82,23 @@ public class HitBoxManager : MonoBehaviour {
 
     void initializeHitboxDictionary()
     {
-        Debug.Log("polynames length: " + polynames.Length);
+        //Debug.Log("polynames length: " + polynames.Length);
         for (int i = 0; i < poly2dHitboxes.Length; i++)
         {
             __hitboxes.Add(polynames[i], new PolygonHitboxWrapper(poly2dHitboxes[i], this));
-            Debug.Log(polynames[i]);
+            //Debug.Log(polynames[i]);
         }
 
         for(int i = 0; i < circleHitboxes.Length; i++)
         {
             __hitboxes.Add(circlenames[i], new CircleHitboxWrapper(circleHitboxes[i], this));
-            Debug.Log(circlenames[i]);
+            //Debug.Log(circlenames[i]);
         }
 
         for(int i = 0; i < boxHitboxes.Length; i++)
         {
             __hitboxes.Add(boxnames[i], new BoxHitboxWrapper(boxHitboxes[i], this));
-            Debug.Log(boxnames[i]);
+            //Debug.Log(boxnames[i]);
         }
     }
 
@@ -111,9 +111,9 @@ public class HitBoxManager : MonoBehaviour {
             MonoBehaviour script = other.GetComponent<MonoBehaviour>();
             if(script is IAttackableActor)
             {
-                (script as IAttackableActor).takeDamage(1);
-                (script as Actor).ApplyHitStop(4);
-                owner.ApplyHitStop(4);
+                (script as IAttackableActor).takeDamage(owner._attack_manager.getAttackPower());
+                (script as Actor).ApplyHitStop(owner._attack_manager.getHitStopFrames());
+                owner.ApplyHitStop(owner._attack_manager.getHitStopFrames());
             }
         }
     }

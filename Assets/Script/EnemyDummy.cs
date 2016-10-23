@@ -34,6 +34,7 @@ public class EnemyDummy : Enemy {
         maxHP = 4;
 
         animationMonitor = GetComponentInChildren<AnimationMonitor>();
+        _collider = GetComponent<Collider2D>();
 	}
 
 }
@@ -85,7 +86,7 @@ public class DummyDamage : FSM_State
     public override void OnEnter()
     {
         _dummy.setAnimation("hurt");
-       
+        
     }
 
     public override void OnExit()
@@ -120,6 +121,7 @@ public class DummyDie : FSM_State
     public override void OnEnter()
     {
         _dummy.setAnimation("die");
+        _dummy._collider.enabled = false;
     }
 
     public override void OnExit()
