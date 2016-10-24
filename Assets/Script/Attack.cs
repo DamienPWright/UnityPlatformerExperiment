@@ -1,28 +1,30 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Runtime.Serialization;
+using System;
 
+[Serializable]
 public class Attack {
-
+    [NonSerialized]
     AnimationMonitor _animation_monitor;
 
-    protected int _animation;
+    int _animation;
+    bool _xinput_lock;
+    bool _jumpinput_lock;
+    float _internal_cooldown = 0.0f;
 
-    protected bool _xinput_lock;
-    protected bool _jumpinput_lock;
+    [NonSerialized]
+    float _internal_cooldown_timer = 0.0f;
+    [NonSerialized]
+    bool _on_cooldown;
 
-    protected float _internal_cooldown = 0.0f;
-    protected float _internal_cooldown_timer = 0.0f;
-
-    protected bool _on_cooldown;
-
-    protected string _attackKey = "";
-    protected string _prevAttackKey = "";
-    protected string _nextNormalAttackKey = "";
-    private string _nextSpecialAttackKey = "";
-    protected bool _inflicts_knockback = false;
-    protected Vector2 _knockback_vector;
-    protected int hitstop_frames = 0;
-    protected int power = 0;
+    string _attackKey = "";
+    string _nextNormalAttackKey = "";
+    string _nextSpecialAttackKey = "";
+    bool _inflicts_knockback = false;
+    Vector2 _knockback_vector;
+    int hitstop_frames = 0;
+    int power = 0;
 
     public int animation{
         set { _animation = value; }
@@ -59,15 +61,6 @@ public class Attack {
         get
         {
             return _attackKey;
-        }
-    }
-
-    public string PrevAttackKey
-    {
-        set { _prevAttackKey = value; }
-        get
-        {
-            return _prevAttackKey;
         }
     }
 
